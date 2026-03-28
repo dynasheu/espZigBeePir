@@ -6,13 +6,14 @@
 
 #define FILTER_LENGTH 50
 #define LOOP_DELAY 10
+#define OCCUPANCY_SENSOR_ENDPOINT_NUMBER 10
 
 //sensor variables
 const int noSensors = 2;
 int pirPins[noSensors] = {10, 11}; // pin numbers
 int outputPins[noSensors] = {6, 7}; // pins for output, same state as mqtt message
 uint8_t button = BOOT_PIN;
-#define OCCUPANCY_SENSOR_ENDPOINT_NUMBER 10
+int outputDelay = 5000;
 
 // struc to hold sensor data
 typedef struct {
@@ -68,18 +69,16 @@ bool Sensor_Update(SensorObj *sensor, int id, int input) {
     sensor->output = true;
   }
 
-  int outputDelay = 5000;
   if ((millis() - sensor->outputTimer) > outputDelay) {
     sensor->output = false;
   }
 
   if (old_output != sensor->output) {
     digitalWrite(outputPins[id], sensor->output); // write to pin
-    Serial.print("new_output");
-    Serial.println(sensor->output);
     sensor->zigBeeSensor->setOccupancy(sensor->output);
     sensor->zigBeeSensor->report();
-
+    Serial.printf("Sensor %d value ", id);
+    Serial.println(sensor->output);
   }
   
   return sensor->output;
@@ -97,12 +96,16 @@ void setup() {
     pinMode(outputPins[i], OUTPUT);
   }
 
-  zbOccupancySensor1.setManufacturerAndModel("Espressif", "ZigbeeOccupancyPIRSensor1");
-  zbOccupancySensor2.setManufacturerAndModel("Espressif", "ZigbeeOccupancyPIRSensor2");
-  Zigbee.addEndpoint(&zbOccupancySensor1);
-  Zigbee.addEndpoint(&zbOccupancySensor2);
+  // initialize sensors
   Sensor_Init(&SensorData[0], &zbOccupancySensor1);
   Sensor_Init(&SensorData[1], &zbOccupancySensor2);
+
+  zbOccupancySensor1.setManufacturerAndModel("Espressif", "Motion Sensor");
+  // zbOccupancySensor2.setManufacturerAndModel("Espressif", "ZigbeeOccupancyPIRSensor2");
+
+  // add endpoints
+  Zigbee.addEndpoint(&zbOccupancySensor1);
+  Zigbee.addEndpoint(&zbOccupancySensor2);
 
   // Optional: set Zigbee device name and model
   pinMode(button, INPUT_PULLUP);
