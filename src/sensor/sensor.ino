@@ -4,16 +4,17 @@
 
 #include "Zigbee.h"
 
+#define EXTERNAL_ANTENNA 1
 #define FILTER_LENGTH 50
 #define LOOP_DELAY 10
 #define OCCUPANCY_SENSOR_ENDPOINT_NUMBER 10
 
 //sensor variables
 const int noSensors = 2;
-int pirPins[noSensors] = {10, 11}; // pin numbers
-int outputPins[noSensors] = {6, 7}; // pins for output, same state as mqtt message
+int pirPins[noSensors] = {22, 23}; // pin numbers
+int outputPins[noSensors] = {20, 19}; // pins for output, same state as sensor output
 uint8_t button = BOOT_PIN;
-int outputDelay = 5000;
+int occupancyTimeout = 3000;
 
 // struc to hold sensor data
 typedef struct {
@@ -69,7 +70,7 @@ bool Sensor_Update(SensorObj *sensor, int id, int input) {
     sensor->output = true;
   }
 
-  if ((millis() - sensor->outputTimer) > outputDelay) {
+  if ((millis() - sensor->outputTimer) > occupancyTimeout) {
     sensor->output = false;
   }
 
@@ -89,6 +90,14 @@ void setup() {
   Serial.begin(115200);
   delay(10);
   Serial.println("Serial online");
+
+  #if EXTERNAL_ANTENNA == 1
+  pinMode(WIFI_ENABLE, OUTPUT); // pinMode(3, OUTPUT);
+  digitalWrite(WIFI_ENABLE, LOW); // digitalWrite(3, LOW); // Activate RF switch control
+  delay(100);
+  pinMode(WIFI_ANT_CONFIG, OUTPUT); // pinMode(14, OUTPUT);
+  digitalWrite(WIFI_ANT_CONFIG, HIGH); // digitalWrite(14, HIGH); // Use external antenna
+  #endif
 
   // initialize sonsor pins and sensor struct
   for (int i  = 0; i < noSensors; i++) {
