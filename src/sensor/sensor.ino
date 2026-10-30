@@ -11,8 +11,8 @@
 
 //sensor variables
 const int noSensors = 2;
-int pirPins[noSensors] = {22, 23}; // pin numbers
-int outputPins[noSensors] = {20, 19}; // pins for output, same state as sensor output
+int pirPins[noSensors] = {20, 19}; // pin numbers
+int outputPins[noSensors] = {22, 23}; // pins for output, same state as sensor output
 uint8_t button = BOOT_PIN;
 int occupancyTimeout = 3000;
 
@@ -109,7 +109,7 @@ void setup() {
   Sensor_Init(&SensorData[0], &zbOccupancySensor1);
   Sensor_Init(&SensorData[1], &zbOccupancySensor2);
 
-  zbOccupancySensor1.setManufacturerAndModel("Espressif", "Motion Sensor");
+  zbOccupancySensor1.setManufacturerAndModel("Espressif", "Dual Motion Sensor");
   // zbOccupancySensor2.setManufacturerAndModel("Espressif", "ZigbeeOccupancyPIRSensor2");
 
   // add endpoints
